@@ -13,8 +13,8 @@ module Mongoid::CollectionSnapshot
     
     field :max_collection_snapshot_instances, default: 2
 
-    before_save :build
-    after_save :ensure_at_most_two_instances_exist
+    before_create :build
+    after_create :ensure_at_most_two_instances_exist
     before_destroy :drop_snapshot_collections
   end
 
