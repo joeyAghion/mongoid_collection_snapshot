@@ -86,8 +86,8 @@ method `build`, which populates the collection snapshot and any indexes you need
 By default, mongoid_collection_snapshot maintains the most recent two snapshots 
 computed any given time.
 
-Other features
---------------
+Multi-collection snapshots
+--------------------------
 
 You can maintain multiple collections atomically within the same snapshot by
 passing unique collection identifiers to ``collection_snaphot`` when you call it 
@@ -113,6 +113,32 @@ class ArtistStats
   def max_price(artist)
     doc = collection_snapshot('max').find({'_id.artist': artist}).first
     doc['value']['max']
+  end
+end
+```
+
+
+Custom database connections
+---------------------------
+
+Your class can specify a custom database for storage of collection snapshots by overriding the `snapshot_session` instance method. In this example, we memoize the connection at the class level to avoid creating many separate connection instances.
+
+```ruby
+class FooStats
+  include Mongoid::CollectionSnapshot
+
+  def build
+    # ...
+  end
+
+  def snapshot_session
+    self.class.snapshot_session
+  end
+
+  def self.snapshot_session
+    @@snapshot_session ||= Moped::Session.new(['127.0.0.1:27017']).tap do |s|
+      s.use :alternative_db
+    end
   end
 end
 ```
